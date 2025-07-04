@@ -44,9 +44,15 @@ builder.Services.Configure<OpenRouterSettings>(
     builder.Configuration.GetSection("OpenRouter"));
 
 // Add services
-builder.Services.AddHttpClient<IChatModelService, OpenRouterService>();
-builder.Services.AddHttpClient<INlpService, NlpService>();
+builder.Services.AddHttpClient<IPythonNlpService, PythonNlpService>();
 builder.Services.AddScoped<ApplicationDbContext>();
+
+// Modularized services registration
+builder.Services.AddScoped<IChatModelService, ChatOrchestratorService>();
+builder.Services.AddScoped<ILLMService, LLMService>();
+builder.Services.AddScoped<ISemanticMemoryService, SemanticMemoryService>();
+builder.Services.AddScoped<IIntentService, IntentService>();
+builder.Services.AddScoped<IChatHistoryRepository, ChatHistoryRepository>();
 
 // Add health checks
 builder.Services.AddHealthChecks()
