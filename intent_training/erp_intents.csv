@@ -1,0 +1,229 @@
+text,intent
+What are the HR policies?,get_hr_policy
+Can you tell me about the company HR guidelines?,get_hr_policy
+Where can I find information on leave and attendance rules?,get_hr_policy
+How do I apply for leave?,apply_leave
+What is the process to request time off?,apply_leave
+Where do I submit a leave application?,apply_leave
+What is the leave policy for employees?,get_leave_policy
+How many sick leaves am I entitled to?,get_leave_policy
+What is the annual leave entitlement?,get_leave_policy
+How do I update my employee profile?,update_profile
+Where can I change my contact information?,update_profile
+How do I edit my emergency contact details?,update_profile
+Where can I download my payslip?,get_payslip
+How do I access my salary slip?,get_payslip
+Where are my monthly payslips stored?,get_payslip
+Who should I contact for HR issues?,contact_hr_support
+How do I reach the HR helpdesk?,contact_hr_support
+Who do I email for HR-related problems?,contact_hr_support
+How do I update my skills in the system?,update_skills
+Where can I add new competencies to my profile?,update_skills
+How do I record completed training?,update_skills
+When is the next performance review?,get_performance_review_dates
+What are the performance appraisal dates?,get_performance_review_dates
+When will my next evaluation take place?,get_performance_review_dates
+How do I request a salary advance?,request_salary_advance
+Where can I apply for an advance on my salary?,request_salary_advance
+What is the process for salary advance?,request_salary_advance
+What health insurance benefits are available?,get_health_insurance_benefits
+What does the company health plan cover?,get_health_insurance_benefits
+Where can I find details about medical insurance?,get_health_insurance_benefits
+How do I report workplace harassment?,report_harassment
+Where can I file a harassment complaint?,report_harassment
+What should I do if I experience harassment at work?,report_harassment
+How do I submit an expense report?,submit_expense_report
+Where do I claim business expenses?,submit_expense_report
+What is the process for expense reimbursement?,submit_expense_report
+Where can I see my reimbursements?,get_reimbursements
+How do I check the status of my expense claims?,get_reimbursements
+Where is my reimbursement history?,get_reimbursements
+When are salaries processed?,get_salary_processing_date
+What day do we get paid?,get_salary_processing_date
+When is payroll run each month?,get_salary_processing_date
+How do I raise a purchase order?,raise_purchase_order
+Where can I create a new PO?,raise_purchase_order
+What is the process to buy new equipment?,raise_purchase_order
+Can I download my tax documents?,get_tax_documents
+Where do I find my tax statements?,get_tax_documents
+How do I access previous fiscal year tax records?,get_tax_documents
+Where can I find budget allocations?,get_budget_allocations
+How do I check my department's budget?,get_budget_allocations
+Where is the budget planning section?,get_budget_allocations
+What are the payment terms?,get_payment_terms
+What is the standard payment period?,get_payment_terms
+Are there any early payment discounts?,get_payment_terms
+How do I generate financial reports?,generate_financial_report
+Where can I create a P&L statement?,generate_financial_report
+How do I print a balance sheet?,generate_financial_report
+What are the budget approval levels?,get_budget_approval_levels
+Who can approve large budgets?,get_budget_approval_levels
+What is the approval limit for managers?,get_budget_approval_levels
+How do I reorder items?,reorder_inventory
+Where can I request more stock?,reorder_inventory
+How do I place a reorder for supplies?,reorder_inventory
+Where is the inventory report?,get_inventory_report
+How do I view stock summary?,get_inventory_report
+Where can I download inventory data?,get_inventory_report
+How do I add new stock?,add_new_stock
+Where can I enter new inventory items?,add_new_stock
+How do I record a new stock purchase?,add_new_stock
+What happens when stock is low?,handle_low_stock
+How does the system alert for low inventory?,handle_low_stock
+What is the threshold for stock alerts?,handle_low_stock
+Can I transfer stock between warehouses?,transfer_stock
+How do I move items to another warehouse?,transfer_stock
+What is the process for stock transfer?,transfer_stock
+How do I track item expiry?,track_item_expiry
+Where can I see perishable stock details?,track_item_expiry
+How do I get alerts for expiring items?,track_item_expiry
+How do I track inventory movement?,track_inventory_movement
+Where can I monitor stock transfers?,track_inventory_movement
+How do I see inventory flow?,track_inventory_movement
+What are the stock categories?,get_stock_categories
+How do I classify inventory items?,get_stock_categories
+Where can I find inventory groups?,get_stock_categories
+How do I conduct a stock audit?,conduct_stock_audit
+What is the process for inventory verification?,conduct_stock_audit
+How do I schedule a stock count?,conduct_stock_audit
+How do I reset my password?,reset_password
+Where is the forgot password link?,reset_password
+How do I change my login credentials?,reset_password
+Who to contact for technical issues?,contact_it_support
+How do I get IT help?,contact_it_support
+Where do I report system problems?,contact_it_support
+How do I access the ERP off-site?,access_erp_remotely
+What is the process for remote ERP login?,access_erp_remotely
+How do I use VPN for ERP access?,access_erp_remotely
+What to do if ERP is down?,report_erp_down
+How do I report an ERP outage?,report_erp_down
+Where can I check ERP system status?,report_erp_down
+Can I integrate ERP with third-party tools?,integrate_with_third_party
+How do I use the ERP API?,integrate_with_third_party
+Where is the API documentation?,integrate_with_third_party
+Where to find the user manual?,get_user_manual
+How do I access ERP documentation?,get_user_manual
+Where is the help guide for ERP?,get_user_manual
+How to handle system errors?,handle_system_error
+What should I do if I get an error code?,handle_system_error
+How do I troubleshoot ERP issues?,handle_system_error
+What are the backup procedures?,get_backup_procedures
+How does the system backup data?,get_backup_procedures
+Where can I find backup schedules?,get_backup_procedures
+How to request system access?,request_system_access
+Where do I apply for new system permissions?,request_system_access
+How do I get access to a new module?,request_system_access
+How to create a sales order?,create_sales_order
+Where can I enter a new sales transaction?,create_sales_order
+How do I process a customer order?,create_sales_order
+How to track sales performance?,track_sales_performance
+Where can I see sales metrics?,track_sales_performance
+How do I view the sales dashboard?,track_sales_performance
+What are the current sales targets?,get_sales_targets
+Where can I find my quota?,get_sales_targets
+How do I check team sales goals?,get_sales_targets
+How to create a customer account?,create_customer_account
+Where do I register a new customer?,create_customer_account
+How do I add a new client profile?,create_customer_account
+How to process a sales return?,process_sales_return
+Where do I handle customer refunds?,process_sales_return
+How do I reverse a sales transaction?,process_sales_return
+How to generate sales reports?,generate_sales_report
+Where can I get daily sales analysis?,generate_sales_report
+How do I print a sales forecast?,generate_sales_report
+How to manage sales leads?,manage_sales_leads
+Where can I track prospects?,manage_sales_leads
+How do I follow up on sales opportunities?,manage_sales_leads
+How to set up a sales meeting?,setup_sales_meeting
+Where do I schedule a sales appointment?,setup_sales_meeting
+How do I book a meeting with a client?,setup_sales_meeting
+What are the current promotions?,get_current_promotions
+Where can I find ongoing offers?,get_current_promotions
+How do I check available discounts?,get_current_promotions
+How to create a marketing campaign?,create_marketing_campaign
+Where do I plan a new campaign?,create_marketing_campaign
+How do I launch a marketing initiative?,create_marketing_campaign
+How to track campaign performance?,track_campaign_performance
+Where can I see campaign analytics?,track_campaign_performance
+How do I monitor marketing ROI?,track_campaign_performance
+How to manage social media?,manage_social_media
+Where can I schedule posts?,manage_social_media
+How do I track engagement on social platforms?,manage_social_media
+How to generate marketing reports?,generate_marketing_report
+Where can I get campaign analysis?,generate_marketing_report
+How do I print marketing performance data?,generate_marketing_report
+How to set up email marketing?,setup_email_marketing
+Where do I create a newsletter campaign?,setup_email_marketing
+How do I segment email audiences?,setup_email_marketing
+How to track project progress?,track_project_progress
+Where can I see project status?,track_project_progress
+How do I monitor project milestones?,track_project_progress
+How to create a new project?,create_project
+Where do I initiate a project?,create_project
+How do I set up a project plan?,create_project
+How to manage project resources?,manage_project_resources
+Where can I allocate team members?,manage_project_resources
+How do I plan project capacity?,manage_project_resources
+How to track project expenses?,track_project_expenses
+Where can I see project costs?,track_project_expenses
+How do I monitor project budget?,track_project_expenses
+How to generate project reports?,generate_project_report
+Where can I get project status analysis?,generate_project_report
+How do I print project performance data?,generate_project_report
+How to handle project risks?,handle_project_risks
+Where do I assess project risks?,handle_project_risks
+How do I mitigate project issues?,handle_project_risks
+How to handle customer complaints?,handle_customer_complaint
+Where do I file a service complaint?,handle_customer_complaint
+How do I escalate a customer issue?,handle_customer_complaint
+How to handle customer feedback?,handle_customer_feedback
+Where can I submit suggestions?,handle_customer_feedback
+How do I give feedback on service?,handle_customer_feedback
+How to create a support ticket?,create_support_ticket
+Where do I report an issue?,create_support_ticket
+How do I open a new support case?,create_support_ticket
+How to track customer satisfaction?,track_customer_satisfaction
+Where can I see CSAT scores?,track_customer_satisfaction
+How do I view customer feedback metrics?,track_customer_satisfaction
+How to manage customer accounts?,manage_customer_accounts
+Where can I see account history?,manage_customer_accounts
+How do I update customer preferences?,manage_customer_accounts
+How to handle customer escalations?,handle_customer_escalation
+Where do I escalate urgent issues?,handle_customer_escalation
+How do I report a high-priority complaint?,handle_customer_escalation
+What are the compliance requirements?,get_compliance_requirements
+Where can I find regulatory standards?,get_compliance_requirements
+How do I review compliance policies?,get_compliance_requirements
+What are the compliance deadlines?,get_compliance_deadlines
+Where can I see upcoming compliance dates?,get_compliance_deadlines
+How do I check regulatory filing deadlines?,get_compliance_deadlines
+How to conduct a compliance audit?,conduct_compliance_audit
+Where do I start a compliance review?,conduct_compliance_audit
+How do I verify compliance status?,conduct_compliance_audit
+How to report compliance issues?,report_compliance_issue
+Where do I document a compliance incident?,report_compliance_issue
+How do I report a policy violation?,report_compliance_issue
+How to track compliance training?,track_compliance_training
+Where can I see completed certifications?,track_compliance_training
+How do I monitor compliance course progress?,track_compliance_training
+How to manage compliance documents?,manage_compliance_documents
+Where can I store regulatory files?,manage_compliance_documents
+How do I archive compliance certificates?,manage_compliance_documents
+How to enroll in training?,enroll_in_training
+Where do I sign up for courses?,enroll_in_training
+How do I register for a new training program?,enroll_in_training
+How to track training progress?,track_training_progress
+Where can I see completed courses?,track_training_progress
+How do I view my certifications?,track_training_progress
+How to create a training plan?,create_training_plan
+Where do I design a learning curriculum?,create_training_plan
+How do I set up a training schedule?,create_training_plan
+How to conduct training sessions?,conduct_training_session
+Where do I deliver a training class?,conduct_training_session
+How do I record attendance for training?,conduct_training_session
+How to evaluate training effectiveness?,evaluate_training_effectiveness
+Where can I assess training impact?,evaluate_training_effectiveness
+How do I measure learning outcomes?,evaluate_training_effectiveness
+How to manage training resources?,manage_training_resources
+Where can I allocate course materials?,manage_training_resources
+How do I coordinate training equipment?,manage_training_resources 

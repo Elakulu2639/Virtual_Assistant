@@ -1,0 +1,66 @@
+# .gitignore for ChatBot project
+
+# Python virtual environments
+venv/
+venv_new/
+venv_old/
+erp-nlp-service/erp-nlp-service/venv/
+erp-nlp-service/erp-nlp-service/venv_new/
+erp-nlp-service/erp-nlp-service/venv_old/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment and config files with secrets
+*.env
+.env.*
+appsettings.json
+appsettings.Development.json
+ChatBot.Server/appsettings.json
+ChatBot.Server/appsettings.Development.json
+
+# Build outputs and binaries
+bin/
+obj/
+ChatBot.Server/bin/
+ChatBot.Server/obj/
+chatbot.client/obj/
+chatbot.client/bin/
+
+# Node modules
+node_modules/
+
+# IDE/editor/project files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vscode/
+.idea/
+*.esproj
+
+# Data files (if they may contain sensitive info)
+ChatBot.Server/Data/*.csv
+
+# Logs
+*.log
+
+# Backup and temp files
+*.bak
+*.tmp
+~$*
+
+# Model checkpoints (if not needed in repo)
+erp-nlp-service/erp-nlp-service/intent_model/checkpoint-*/
+erp-nlp-service/erp-nlp-service/model-best/
+intent_training/output/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Visual Studio folder
+.vs/ 

@@ -1,0 +1,277 @@
+[
+  {
+    "text": "What is the leave policy for employees?",
+    "entities": [
+      [
+        12,
+        24,
+        "HR_POLICY"
+      ],
+      [
+        29,
+        38,
+        "EMPLOYEE"
+      ]
+    ]
+  },
+  {
+    "text": "Show me invoice 12345 for John Doe.",
+    "entities": [
+      [
+        8,
+        15,
+        "INVOICE"
+      ],
+      [
+        16,
+        21,
+        "INVOICE_NUMBER"
+      ],
+      [
+        26,
+        34,
+        "EMPLOYEE_NAME"
+      ]
+    ]
+  },
+  {
+    "text": "How do I apply for sick leave?",
+    "entities": [
+      [
+        19,
+        29,
+        "LEAVE_TYPE"
+      ]
+    ]
+  },
+  {
+    "text": "Who is the manager of the finance department?",
+    "entities": [
+      [
+        26,
+        44,
+        "DEPARTMENT"
+      ]
+    ]
+  },
+  {
+    "text": "Get the status of purchase order PO-98765.",
+    "entities": [
+      [
+        18,
+        32,
+        "PURCHASE_ORDER"
+      ],
+      [
+        33,
+        41,
+        "ORDER_NUMBER"
+      ]
+    ]
+  },
+  {
+    "text": "When was invoice 54321 paid?",
+    "entities": [
+      [
+        9,
+        16,
+        "INVOICE"
+      ],
+      [
+        17,
+        22,
+        "INVOICE_NUMBER"
+      ]
+    ]
+  },
+  {
+    "text": "List all employees in the HR department.",
+    "entities": [
+      [
+        26,
+        39,
+        "DEPARTMENT"
+      ]
+    ]
+  },
+  {
+    "text": "What is the project deadline for Alpha?",
+    "entities": [
+      [
+        12,
+        19,
+        "PROJECT"
+      ],
+      [
+        33,
+        38,
+        "PROJECT_NAME"
+      ]
+    ]
+  },
+  {
+    "text": "How many annual leaves do I have left?",
+    "entities": [
+      [
+        9,
+        22,
+        "LEAVE_TYPE"
+      ]
+    ]
+  },
+  {
+    "text": "Report a support issue: ERP login not working.",
+    "entities": [
+      [
+        9,
+        22,
+        "SUPPORT_ISSUE"
+      ],
+      [
+        24,
+        45,
+        "SUPPORT_ISSUE_DETAIL"
+      ]
+    ]
+  },
+  {
+    "text": "Who approved my expense report on 2023-06-15?",
+    "entities": [
+      [
+        16,
+        30,
+        "DOCUMENT"
+      ],
+      [
+        34,
+        44,
+        "DATE"
+      ]
+    ]
+  },
+  {
+    "text": "Find the attendance record for Jane Smith.",
+    "entities": [
+      [
+        9,
+        26,
+        "DOCUMENT"
+      ],
+      [
+        31,
+        41,
+        "EMPLOYEE_NAME"
+      ]
+    ]
+  },
+  {
+    "text": "What is the IT policy for remote work?",
+    "entities": [
+      [
+        12,
+        21,
+        "HR_POLICY"
+      ],
+      [
+        26,
+        37,
+        "POLICY_TOPIC"
+      ]
+    ]
+  },
+  {
+    "text": "Show me all invoices for the marketing department.",
+    "entities": [
+      [
+        12,
+        20,
+        "INVOICE"
+      ],
+      [
+        29,
+        49,
+        "DEPARTMENT"
+      ]
+    ]
+  },
+  {
+    "text": "How do I reset my ERP password?",
+    "entities": [
+      [
+        9,
+        30,
+        "SUPPORT_ISSUE"
+      ]
+    ]
+  },
+  {
+    "text": "Who is the project manager for Project Phoenix?",
+    "entities": [
+      [
+        11,
+        26,
+        "ROLE"
+      ],
+      [
+        31,
+        46,
+        "PROJECT_NAME"
+      ]
+    ]
+  },
+  {
+    "text": "Submit a leave request for 2024-01-10.",
+    "entities": [
+      [
+        9,
+        22,
+        "DOCUMENT"
+      ],
+      [
+        27,
+        37,
+        "DATE"
+      ]
+    ]
+  },
+  {
+    "text": "What is the reimbursement policy?",
+    "entities": [
+      [
+        12,
+        32,
+        "HR_POLICY"
+      ]
+    ]
+  },
+  {
+    "text": "Get the contact details for Emily Brown in HR.",
+    "entities": [
+      [
+        28,
+        39,
+        "EMPLOYEE_NAME"
+      ],
+      [
+        43,
+        45,
+        "DEPARTMENT"
+      ]
+    ]
+  },
+  {
+    "text": "How do I escalate a ticket for payroll issues?",
+    "entities": [
+      [
+        9,
+        26,
+        "SUPPORT_ISSUE"
+      ],
+      [
+        31,
+        45,
+        "SUPPORT_ISSUE_DETAIL"
+      ]
+    ]
+  }
+]
