@@ -608,22 +608,21 @@ async def analyze(request: AnalyzeRequest):
         
         # Use enhanced context-aware search
         best_idx, best_score = search_with_context(text, context_messages)
-        
         if best_idx >= 0:
-    print(f"[Semantic Search] User Query: {text}")
-    print(f"[Semantic Search] Best Match: {questions[best_idx]}")
-    print(f"[Semantic Search] Similarity Score: {best_score}")
-           print(f"[Semantic Search] Domain Threshold: {domain_config['similarity_threshold']}")
-           print(f"[Semantic Search] Context used: {len(context_messages)} messages")
-    if best_score > domain_config['similarity_threshold']:
-        return {
-            "source": "csv",
-            "answer": answers[best_idx],
-            "similarity": best_score,
-            "matched_question": questions[best_idx],
-            "rewritten": rewritten,
-            "domain": current_domain
-        }
+            print(f"[Semantic Search] User Query: {text}")
+            print(f"[Semantic Search] Best Match: {questions[best_idx]}")
+            print(f"[Semantic Search] Similarity Score: {best_score}")
+            print(f"[Semantic Search] Domain Threshold: {domain_config['similarity_threshold']}")
+            print(f"[Semantic Search] Context used: {len(context_messages)} messages")
+            if best_score > domain_config['similarity_threshold']:
+                return {
+                    "source": "csv",
+                    "answer": answers[best_idx],
+                    "similarity": best_score,
+                    "matched_question": questions[best_idx],
+                    "rewritten": rewritten,
+                    "domain": current_domain
+                }
 
     # 2. Get semantically relevant chat history using spaCy similarity
     relevant_history = []
