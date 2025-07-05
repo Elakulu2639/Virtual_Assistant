@@ -45,11 +45,19 @@ builder.Services.Configure<OpenRouterSettings>(
 
 // Add services
 builder.Services.AddHttpClient<IPythonNlpService, PythonNlpService>();
+builder.Services.AddHttpClient<ILLMService, LLMService>((sp, client) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var apiKey = config.GetSection("OpenRouter:ApiKey").Value;
+    client.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
+    client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+    client.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:62963");
+    client.DefaultRequestHeaders.Add("X-Title", "ERP Assistant");
+});
 builder.Services.AddScoped<ApplicationDbContext>();
 
 // Modularized services registration
 builder.Services.AddScoped<IChatModelService, ChatOrchestratorService>();
-builder.Services.AddScoped<ILLMService, LLMService>();
 builder.Services.AddScoped<ISemanticMemoryService, SemanticMemoryService>();
 builder.Services.AddScoped<IIntentService, IntentService>();
 builder.Services.AddScoped<IChatHistoryRepository, ChatHistoryRepository>();

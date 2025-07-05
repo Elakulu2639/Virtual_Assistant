@@ -1,0 +1,74 @@
+.chatbot-suggestion-bubbles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    padding: 0 0.5rem;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 64px;
+    width: 100%;
+    z-index: 10;
+    background: transparent;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.chatbot-suggestion-bubble {
+    background: linear-gradient(135deg, #f5f6ff 0%, #ececff 100%);
+    color: #6366F1;
+    border: 1.5px solid #e0e7ff;
+    border-radius: 20px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(123,125,251,0.06);
+    white-space: nowrap;
+    user-select: none;
+}
+.chatbot-suggestion-bubble:hover,
+.chatbot-suggestion-bubble:focus {
+    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    color: #fff;
+    border-color: #6366F1;
+    box-shadow: 0 4px 16px rgba(123,125,251,0.15);
+    transform: translateY(-1px);
+}
+
+.autosuggest-container {
+    position: relative;
+    width: 100%;
+    z-index: 10;
+}
+
+.autosuggest-suggestions-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    margin-top: 0.5rem;
+}
+
+.autosuggest-suggestion {
+    padding: 0.8rem 1.2rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+    transition: background-color 0.2s;
+}
+
+.autosuggest-suggestion:hover,
+.autosuggest-suggestion-highlighted {
+    background-color: #f8fafc;
+}
+
+.autosuggest-suggestions-container, .autosuggest-suggestion, .autosuggest-suggestion-highlighted {
+    display: none !important;
+} 

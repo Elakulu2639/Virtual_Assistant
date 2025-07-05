@@ -80,7 +80,7 @@ ERP answer: {csvAnswer}
                             await _semanticMemoryService.StoreMessageAsync(sessionId, conversationalAnswer, "bot");
                         }
                         // Save chat history
-                        var chatEntry = new ChatHistory
+                        var csvChatEntry = new ChatHistory
                         {
                             SessionId = sessionId ?? Guid.NewGuid().ToString(),
                             UserMessage = userMessage,
@@ -90,7 +90,7 @@ ERP answer: {csvAnswer}
                             Entities = string.Empty,
                             Confidence = 1.0
                         };
-                        await _chatHistoryRepository.SaveChatHistoryAsync(chatEntry);
+                        await _chatHistoryRepository.SaveChatHistoryAsync(csvChatEntry);
                         return conversationalAnswer;
                     }
                 }

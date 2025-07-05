@@ -18,7 +18,7 @@ namespace ChatBot.Server.Services
         {
             _httpClient = httpClient;
             _logger = logger;
-            _httpClient.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
+            //_httpClient.BaseAddress = new Uri("https://openrouter.ai/api/v1/");
         }
 
         public async Task<string> GetLLMResponseAsync(List<object> messages, string model, double temperature, int maxTokens, double topP, double presencePenalty, double frequencyPenalty)

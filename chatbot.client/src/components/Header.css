@@ -1,0 +1,42 @@
+.chatbot-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #7b7dfb 0%, #a18aff 100%);
+    color: #fff;
+    padding: 1.5rem 2rem 1.2rem 2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    font-size: 1.25rem;
+    font-weight: 600;
+    position: relative;
+}
+
+.chatbot-bot-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    box-shadow: none;
+}
+
+.chatbot-title {
+    flex: 1;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-align: left;
+}
+
+.chatbot-restart-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.chatbot-restart-btn:hover {
+    background: rgba(255,255,255,0.12);
+} 

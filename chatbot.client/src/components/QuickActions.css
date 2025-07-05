@@ -1,0 +1,57 @@
+.chatbot-quick-actions-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.7rem 1.2rem 0.3rem 1.2rem;
+    background: #f8f8ff;
+    border-bottom: 1px solid #ececff;
+    flex-shrink: 0;
+}
+
+.chatbot-quick-actions-label {
+    font-weight: 700;
+    color: #6366F1;
+    margin-bottom: 0.7rem;
+    text-align: center;
+    font-size: 1.05rem;
+}
+
+.chatbot-quick-actions-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+}
+
+.chatbot-quick-action-btn {
+    background: #fff;
+    color: #6366F1;
+    border: 1.5px solid #ececff;
+    border-radius: 10px;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 1px 4px rgba(123,125,251,0.03);
+    transition: background 0.2s, border 0.2s, color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: left;
+    width: 100%;
+    margin: 0;
+    min-width: 0;
+}
+.chatbot-quick-action-btn:hover {
+    background: #f5f6ff;
+    border-color: #bfc6fa;
+    color: #4F46E5;
+}
+.chatbot-quick-action-icon {
+    margin-right: 0.5rem;
+    font-size: 1.1em;
+}
+.chatbot-quick-action-text {
+    font-weight: 500;
+} 
