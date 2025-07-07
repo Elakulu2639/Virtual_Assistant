@@ -7,15 +7,18 @@ import './MessageBubble.css';
 
 const BOT_AVATAR = '/cropped_circle_image.png';
 
-const MessageBubble = React.forwardRef(function MessageBubble({ msg, idx, onCopy, copiedIdx, isTyping, botAvatar, isGrouped, showTimestamp }, ref) {
+const MessageBubble = React.forwardRef(function MessageBubble({ msg, idx, onCopy, copiedIdx, isTyping, botAvatar, showTimestamp }, ref) {
+  // Hide empty bot bubbles unless it's a typing indicator
+  if (msg.from === 'bot' && !msg.text && !isTyping) {
+    return null;
+  }
   return (
     <div
       ref={ref}
       key={idx}
-      className={`chatbot-message ${msg.from}${isGrouped ? ' grouped' : ''}`}
-      style={isGrouped ? { marginTop: 2 } : {}}
+      className={`chatbot-message ${msg.from}`}
     >
-      {!isGrouped && (msg.from === 'bot' ? (
+      {(msg.from === 'bot' ? (
         <Avatar src={botAvatar || BOT_AVATAR} className="message-avatar message-avatar-bot" />
       ) : (
         <Avatar className="message-avatar user-avatar">
@@ -23,7 +26,7 @@ const MessageBubble = React.forwardRef(function MessageBubble({ msg, idx, onCopy
         </Avatar>
       ))}
       <div
-        className={`chatbot-bubble message-content${msg.from === 'user' ? ' user' : ''}${msg.error ? ' error' : ''}${isGrouped ? ' grouped' : ''}`}
+        className={`chatbot-bubble message-content${msg.from === 'user' ? ' user' : ''}${msg.error ? ' error' : ''}`}
         style={{ position: 'relative' }}
       >
         {isTyping ? (

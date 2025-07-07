@@ -13,12 +13,6 @@
     flex-direction: row-reverse;
     align-self: flex-end;
 }
-.chatbot-message.grouped {
-    margin-top: 2px;
-}
-.chatbot-message.grouped .message-avatar {
-    display: none;
-}
 
 .message-avatar {
     width: 36px !important;
@@ -44,10 +38,6 @@
     max-width: 320px;
     word-break: break-word;
     position: relative;
-}
-.chatbot-bubble.grouped {
-    border-top-left-radius: 8px !important;
-    border-top-right-radius: 8px !important;
 }
 .chatbot-message.user .message-content {
     background: var(--user-msg-bg);

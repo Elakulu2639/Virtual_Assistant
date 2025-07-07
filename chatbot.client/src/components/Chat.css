@@ -133,30 +133,30 @@
     font-size: 0.7rem;
     margin: 0 0.2rem;
   }
-  .chatbot-input-fixed {
+.chatbot-input-fixed {
     padding: 0.3rem 0.5rem;
-  }
+}
   .chatbot-input-container {
     padding: 0.1rem 0.5rem;
-  }
+}
   .chatbot-send-btn {
     width: 32px;
     height: 32px;
     font-size: 1.1rem;
     margin-left: 0.3rem;
-  }
+}
   .chatbot-quick-actions-section {
     padding: 0.3rem 0.2rem 0.1rem 0.2rem;
   }
   .chatbot-quick-actions-label {
     font-size: 0.95rem;
-  }
+}
   .chatbot-quick-action-btn {
     font-size: 0.85rem;
     padding: 0.5rem 0.5rem;
-  }
+}
   .chatbot-suggestion-bubbles {
     bottom: 56px;
     padding: 0 0.2rem;
   }
-}
+    }
