@@ -18,7 +18,7 @@ function MessageList({ messages, onCopy, copiedIdx, isTyping, botAvatar }) {
     : messages;
 
   return (
-    <div className="chatbot-messages" style={{ maxHeight: 400, overflowY: 'auto', background: '#fff' }}>
+    <div className="chatbot-messages">
       {displayMessages.map((msg, idx) => {
         const nextMsg = displayMessages[idx + 1];
         const showTimestamp = !nextMsg || nextMsg.from !== msg.from;
