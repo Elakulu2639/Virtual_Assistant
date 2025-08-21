@@ -107,33 +107,11 @@ INTENT_LOOKUP_CSV = '../../intent_training/erp_intents.csv'
 intent_df = pd.read_csv(INTENT_LOOKUP_CSV)
 intent_lookup = {str(q).strip().lower(): i for q, i in zip(intent_df['text'], intent_df['intent'])}
 
-# Configuration for different domains (can be extended)
-DOMAIN_CONFIGS = {
-    'erp': {
-        'csv_path': '../../ChatBot.Server/Data/erp_case_data_expanded.csv',
-        'intent_lookup_csv': '../../intent_training/erp_intents.csv',
-        'similarity_threshold': 0.75,
-        'intent_confidence_threshold': 0.5
-    },
-    'customer_service': {
-        'csv_path': None,  # Can be added later
-        'intent_lookup_csv': None,
-        'similarity_threshold': 0.7,
-        'intent_confidence_threshold': 0.6
-    },
-    'technical_support': {
-        'csv_path': None,  # Can be added later
-        'intent_lookup_csv': None,
-        'similarity_threshold': 0.8,
-        'intent_confidence_threshold': 0.7
-    }
-}
-
-# Current domain (can be changed via API)
-current_domain = 'erp'
-
-def get_domain_config():
-    return DOMAIN_CONFIGS.get(current_domain, DOMAIN_CONFIGS['erp'])
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
 
 # ChromaDB functions for semantic memory (store as before, but use spaCy for similarity)
 def add_message_to_chroma(session_id: str, message: str, role: str, timestamp: Optional[str] = None):
@@ -251,25 +229,582 @@ def resolve_coref(user_message, last_bot_message, last_user_message=None):
     # Check if coreferee is properly loaded
     if not hasattr(doc._, 'coref_resolved'):
         print("[Coreferee WARNING] coref_resolved extension not found. Trying alternative approach.")
-        # Fallback: simple context-aware resolution
-        if last_bot_message and any(word in user_message.lower() for word in ['it', 'this', 'that', 'they', 'them', 'those', 'what about']):
-            # If the user message contains pronouns or follow-up phrases, try to expand them with context
-            if 'leave' in last_bot_message.lower() or 'policy' in last_bot_message.lower():
-                if 'manager' in user_message.lower():
-                    resolved = user_message.replace('what about', 'what is the leave policy for managers')
-                elif 'employee' in user_message.lower():
-                    resolved = user_message.replace('what about', 'what is the leave policy for employees')
-                else:
-                    resolved = user_message.replace('what about', 'what is the leave policy for')
-            elif 'technical' in last_bot_message.lower() or 'support' in last_bot_message.lower():
-                if 'manager' in user_message.lower():
-                    resolved = user_message.replace('what about', 'what is the technical support for managers')
-                else:
-                    resolved = user_message.replace('what about', 'what is the technical support for')
+    else:
+        try:
+            # Only return the rewritten user message part
+            if "User:" in doc._.coref_resolved:
+                resolved = doc._.coref_resolved.split("User:")[-1].strip()
             else:
-                resolved = user_message
-        else:
+                resolved = doc._.coref_resolved
+        except Exception as e:
+            print(f"[Coreferee WARNING] Error resolving coref: {e}")
             resolved = user_message
+    
+    return resolved
+
+def classify_intent_local(text):
+    inputs = intent_tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=64)
+    with torch.no_grad():
+        logits = intent_model(**inputs).logits
+        pred = torch.argmax(logits, dim=1).item()
+    print(f"[Intent Debug] Input: {text}")
+    print(f"[Intent Debug] Logits: {logits.tolist()}")
+    print(f"[Intent Debug] Predicted class index: {pred}")
+    print(f"[Intent Debug] Predicted intent: {id2intent[str(pred)]}")
+    return id2intent[str(pred)]
+
+class AnalysisStrategy(Enum):
+    EXACT_MATCH = "exact_match"
+    SEMANTIC_SEARCH = "semantic_search"
+    INTENT_CLASSIFICATION = "intent_classification"
+    CONTEXT_AWARE = "context_aware"
+    HYBRID = "hybrid"
+
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
+
+# Use spaCy's large model for all NLP tasks (embeddings, similarity, coreference)
+try:
+    nlp = spacy.load("en_core_web_lg")
+    print(f"[spaCy] Loaded model: {nlp.meta['name']} (version {nlp.meta['version']})")
+    if config.semantic_config.use_coreference:
+        try:
+            nlp.add_pipe('coreferee')
+            print("[spaCy] coreferee pipeline added successfully to en_core_web_lg.")
+        except Exception as e:
+            print(f"[spaCy] Error adding coreferee pipeline: {e}")
+except Exception as e:
+    print(f"[spaCy] Error loading model or setting up coreferee: {e}")
+    raise
+
+# Load fine-tuned intent classifier
+INTENT_MODEL_PATH = "intent_model"
+intent_tokenizer = AutoTokenizer.from_pretrained(INTENT_MODEL_PATH)
+intent_model = AutoModelForSequenceClassification.from_pretrained(INTENT_MODEL_PATH)
+with open(f"{INTENT_MODEL_PATH}/id2intent.json", "r") as f:
+    id2intent = json.load(f)
+
+# Load CSV and compute spaCy docs for semantic search (use nlp with vectors)
+CSV_PATH = '../../ChatBot.Server/Data/erp_case_data_expanded.csv'
+df = pd.read_csv(CSV_PATH)
+questions = df['Question'].tolist()
+answers = df['Answer'].tolist()
+question_docs = [nlp(q) for q in questions]
+
+# Load intent CSV for hybrid lookup
+INTENT_LOOKUP_CSV = '../../intent_training/erp_intents.csv'
+intent_df = pd.read_csv(INTENT_LOOKUP_CSV)
+intent_lookup = {str(q).strip().lower(): i for q, i in zip(intent_df['text'], intent_df['intent'])}
+
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
+
+# ChromaDB functions for semantic memory (store as before, but use spaCy for similarity)
+def add_message_to_chroma(session_id: str, message: str, role: str, timestamp: Optional[str] = None):
+    if timestamp is None:
+        timestamp = datetime.utcnow().isoformat()
+    message_id = str(uuid.uuid4())
+    # Use spaCy vector for embedding
+    embedding = nlp(message).vector
+    print(f"[Embedding DEBUG] Message: '{message}'\n[Embedding DEBUG] Vector (first 5): {embedding[:5]} | Norm: {np.linalg.norm(embedding):.4f}")
+    if embedding is None or np.linalg.norm(embedding) == 0 or len(embedding) == 0:
+        print(f"[Embedding WARNING] Empty or zero embedding for message: '{message}' (skipping ChromaDB add)")
+        return None
+    chat_collection.add(
+        documents=[message],
+        embeddings=[embedding.tolist()],
+        metadatas=[{
+            "session_id": session_id,
+            "role": role,
+            "timestamp": timestamp,
+            "message_id": message_id
+        }],
+        ids=[message_id]
+    )
+    print(f"[ChromaDB] Stored {role} message for session {session_id}")
+    return message_id
+
+def get_relevant_history(query: str, session_id: Optional[str] = None, top_k: int = 5):
+    query_doc = nlp(query)
+    filters = {}
+    if session_id:
+        filters["session_id"] = session_id
+    # Get all messages for the session
+    results = chat_collection.get(where=filters if filters else None)
+    messages = []
+    if results["documents"]:
+        for i, doc in enumerate(results["documents"]):
+            messages.append({
+                "message": doc,
+                "role": results["metadatas"][i]["role"],
+                "timestamp": results["metadatas"][i]["timestamp"]
+            })
+    # Compute similarity using spaCy
+    for msg in messages:
+        msg_doc = nlp(msg["message"])
+        msg["similarity"] = query_doc.similarity(msg_doc)
+    # Sort by similarity and return top_k
+    messages.sort(key=lambda x: x["similarity"], reverse=True)
+    return messages[:top_k]
+
+def get_session_history(session_id: str, limit: int = 10):
+    try:
+        results = chat_collection.get(
+            where={"session_id": session_id},
+            limit=limit
+        )
+        messages = []
+        if results["documents"]:
+            for i, doc in enumerate(results["documents"]):
+                messages.append({
+                    "message": doc,
+                    "role": results["metadatas"][i]["role"],
+                    "timestamp": results["metadatas"][i]["timestamp"]
+                })
+        messages.sort(key=lambda x: x["timestamp"])
+        return messages
+    except Exception as e:
+        print(f"[ChromaDB] Error getting session history: {e}")
+        return []
+
+def search_with_context(query: str, context_messages: List[str] = None):
+    """Enhanced semantic search that considers conversation context"""
+    if not questions or not question_docs:
+        return None, 0.0
+    
+    query_doc = nlp(query)
+    best_score = 0.0
+    best_idx = -1
+    
+    # If we have context, create a combined query
+    if context_messages:
+        context_text = " ".join(context_messages)
+        context_doc = nlp(context_text)
+        # Combine query with context for better matching
+        combined_query = f"{query} {context_text}"
+        combined_doc = nlp(combined_query)
+    else:
+        combined_doc = query_doc
+    
+    # Search through all questions
+    for i, q_doc in enumerate(question_docs):
+        # Calculate similarity with both original query and combined query
+        direct_similarity = query_doc.similarity(q_doc)
+        context_similarity = combined_doc.similarity(q_doc)
+        
+        # Use the higher similarity score
+        similarity = max(direct_similarity, context_similarity)
+        
+        if similarity > best_score:
+            best_score = similarity
+            best_idx = i
+    
+    return best_idx, best_score
+
+def lookup_intent_exact(text):
+    return intent_lookup.get(str(text).strip().lower())
+
+def resolve_coref(user_message, last_bot_message, last_user_message=None):
+    # Use only the last bot message as context, with clear speaker tags
+    if last_bot_message:
+        context = f"Bot: {last_bot_message}\nUser: {user_message}"
+    else:
+        context = user_message
+    doc = nlp(context)
+    
+    # Check if coreferee is properly loaded
+    if not hasattr(doc._, 'coref_resolved'):
+        print("[Coreferee WARNING] coref_resolved extension not found. Trying alternative approach.")
+    else:
+        try:
+            # Only return the rewritten user message part
+            if "User:" in doc._.coref_resolved:
+                resolved = doc._.coref_resolved.split("User:")[-1].strip()
+            else:
+                resolved = doc._.coref_resolved
+        except Exception as e:
+            print(f"[Coreferee WARNING] Error resolving coref: {e}")
+            resolved = user_message
+    
+    return resolved
+
+def classify_intent_local(text):
+    inputs = intent_tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=64)
+    with torch.no_grad():
+        logits = intent_model(**inputs).logits
+        pred = torch.argmax(logits, dim=1).item()
+    print(f"[Intent Debug] Input: {text}")
+    print(f"[Intent Debug] Logits: {logits.tolist()}")
+    print(f"[Intent Debug] Predicted class index: {pred}")
+    print(f"[Intent Debug] Predicted intent: {id2intent[str(pred)]}")
+    return id2intent[str(pred)]
+
+class AnalysisStrategy(Enum):
+    EXACT_MATCH = "exact_match"
+    SEMANTIC_SEARCH = "semantic_search"
+    INTENT_CLASSIFICATION = "intent_classification"
+    CONTEXT_AWARE = "context_aware"
+    HYBRID = "hybrid"
+
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
+
+# Use spaCy's large model for all NLP tasks (embeddings, similarity, coreference)
+try:
+    nlp = spacy.load("en_core_web_lg")
+    print(f"[spaCy] Loaded model: {nlp.meta['name']} (version {nlp.meta['version']})")
+    if config.semantic_config.use_coreference:
+        try:
+            nlp.add_pipe('coreferee')
+            print("[spaCy] coreferee pipeline added successfully to en_core_web_lg.")
+        except Exception as e:
+            print(f"[spaCy] Error adding coreferee pipeline: {e}")
+except Exception as e:
+    print(f"[spaCy] Error loading model or setting up coreferee: {e}")
+    raise
+
+# Load fine-tuned intent classifier
+INTENT_MODEL_PATH = "intent_model"
+intent_tokenizer = AutoTokenizer.from_pretrained(INTENT_MODEL_PATH)
+intent_model = AutoModelForSequenceClassification.from_pretrained(INTENT_MODEL_PATH)
+with open(f"{INTENT_MODEL_PATH}/id2intent.json", "r") as f:
+    id2intent = json.load(f)
+
+# Load CSV and compute spaCy docs for semantic search (use nlp with vectors)
+CSV_PATH = '../../ChatBot.Server/Data/erp_case_data_expanded.csv'
+df = pd.read_csv(CSV_PATH)
+questions = df['Question'].tolist()
+answers = df['Answer'].tolist()
+question_docs = [nlp(q) for q in questions]
+
+# Load intent CSV for hybrid lookup
+INTENT_LOOKUP_CSV = '../../intent_training/erp_intents.csv'
+intent_df = pd.read_csv(INTENT_LOOKUP_CSV)
+intent_lookup = {str(q).strip().lower(): i for q, i in zip(intent_df['text'], intent_df['intent'])}
+
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
+
+# ChromaDB functions for semantic memory (store as before, but use spaCy for similarity)
+def add_message_to_chroma(session_id: str, message: str, role: str, timestamp: Optional[str] = None):
+    if timestamp is None:
+        timestamp = datetime.utcnow().isoformat()
+    message_id = str(uuid.uuid4())
+    # Use spaCy vector for embedding
+    embedding = nlp(message).vector
+    print(f"[Embedding DEBUG] Message: '{message}'\n[Embedding DEBUG] Vector (first 5): {embedding[:5]} | Norm: {np.linalg.norm(embedding):.4f}")
+    if embedding is None or np.linalg.norm(embedding) == 0 or len(embedding) == 0:
+        print(f"[Embedding WARNING] Empty or zero embedding for message: '{message}' (skipping ChromaDB add)")
+        return None
+    chat_collection.add(
+        documents=[message],
+        embeddings=[embedding.tolist()],
+        metadatas=[{
+            "session_id": session_id,
+            "role": role,
+            "timestamp": timestamp,
+            "message_id": message_id
+        }],
+        ids=[message_id]
+    )
+    print(f"[ChromaDB] Stored {role} message for session {session_id}")
+    return message_id
+
+def get_relevant_history(query: str, session_id: Optional[str] = None, top_k: int = 5):
+    query_doc = nlp(query)
+    filters = {}
+    if session_id:
+        filters["session_id"] = session_id
+    # Get all messages for the session
+    results = chat_collection.get(where=filters if filters else None)
+    messages = []
+    if results["documents"]:
+        for i, doc in enumerate(results["documents"]):
+            messages.append({
+                "message": doc,
+                "role": results["metadatas"][i]["role"],
+                "timestamp": results["metadatas"][i]["timestamp"]
+            })
+    # Compute similarity using spaCy
+    for msg in messages:
+        msg_doc = nlp(msg["message"])
+        msg["similarity"] = query_doc.similarity(msg_doc)
+    # Sort by similarity and return top_k
+    messages.sort(key=lambda x: x["similarity"], reverse=True)
+    return messages[:top_k]
+
+def get_session_history(session_id: str, limit: int = 10):
+    try:
+        results = chat_collection.get(
+            where={"session_id": session_id},
+            limit=limit
+        )
+        messages = []
+        if results["documents"]:
+            for i, doc in enumerate(results["documents"]):
+                messages.append({
+                    "message": doc,
+                    "role": results["metadatas"][i]["role"],
+                    "timestamp": results["metadatas"][i]["timestamp"]
+                })
+        messages.sort(key=lambda x: x["timestamp"])
+        return messages
+    except Exception as e:
+        print(f"[ChromaDB] Error getting session history: {e}")
+        return []
+
+def search_with_context(query: str, context_messages: List[str] = None):
+    """Enhanced semantic search that considers conversation context"""
+    if not questions or not question_docs:
+        return None, 0.0
+    
+    query_doc = nlp(query)
+    best_score = 0.0
+    best_idx = -1
+    
+    # If we have context, create a combined query
+    if context_messages:
+        context_text = " ".join(context_messages)
+        context_doc = nlp(context_text)
+        # Combine query with context for better matching
+        combined_query = f"{query} {context_text}"
+        combined_doc = nlp(combined_query)
+    else:
+        combined_doc = query_doc
+    
+    # Search through all questions
+    for i, q_doc in enumerate(question_docs):
+        # Calculate similarity with both original query and combined query
+        direct_similarity = query_doc.similarity(q_doc)
+        context_similarity = combined_doc.similarity(q_doc)
+        
+        # Use the higher similarity score
+        similarity = max(direct_similarity, context_similarity)
+        
+        if similarity > best_score:
+            best_score = similarity
+            best_idx = i
+    
+    return best_idx, best_score
+
+def lookup_intent_exact(text):
+    return intent_lookup.get(str(text).strip().lower())
+
+def resolve_coref(user_message, last_bot_message, last_user_message=None):
+    # Use only the last bot message as context, with clear speaker tags
+    if last_bot_message:
+        context = f"Bot: {last_bot_message}\nUser: {user_message}"
+    else:
+        context = user_message
+    doc = nlp(context)
+    
+    # Check if coreferee is properly loaded
+    if not hasattr(doc._, 'coref_resolved'):
+        print("[Coreferee WARNING] coref_resolved extension not found. Trying alternative approach.")
+    else:
+        try:
+            # Only return the rewritten user message part
+            if "User:" in doc._.coref_resolved:
+                resolved = doc._.coref_resolved.split("User:")[-1].strip()
+            else:
+                resolved = doc._.coref_resolved
+        except Exception as e:
+            print(f"[Coreferee WARNING] Error resolving coref: {e}")
+            resolved = user_message
+    
+    return resolved
+
+def classify_intent_local(text):
+    inputs = intent_tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=64)
+    with torch.no_grad():
+        logits = intent_model(**inputs).logits
+        pred = torch.argmax(logits, dim=1).item()
+    print(f"[Intent Debug] Input: {text}")
+    print(f"[Intent Debug] Logits: {logits.tolist()}")
+    print(f"[Intent Debug] Predicted class index: {pred}")
+    print(f"[Intent Debug] Predicted intent: {id2intent[str(pred)]}")
+    return id2intent[str(pred)]
+
+class AnalysisStrategy(Enum):
+    EXACT_MATCH = "exact_match"
+    SEMANTIC_SEARCH = "semantic_search"
+    INTENT_CLASSIFICATION = "intent_classification"
+    CONTEXT_AWARE = "context_aware"
+    HYBRID = "hybrid"
+
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
+
+# Use spaCy's large model for all NLP tasks (embeddings, similarity, coreference)
+try:
+    nlp = spacy.load("en_core_web_lg")
+    print(f"[spaCy] Loaded model: {nlp.meta['name']} (version {nlp.meta['version']})")
+    if config.semantic_config.use_coreference:
+        try:
+            nlp.add_pipe('coreferee')
+            print("[spaCy] coreferee pipeline added successfully to en_core_web_lg.")
+        except Exception as e:
+            print(f"[spaCy] Error adding coreferee pipeline: {e}")
+except Exception as e:
+    print(f"[spaCy] Error loading model or setting up coreferee: {e}")
+    raise
+
+# Load fine-tuned intent classifier
+INTENT_MODEL_PATH = "intent_model"
+intent_tokenizer = AutoTokenizer.from_pretrained(INTENT_MODEL_PATH)
+intent_model = AutoModelForSequenceClassification.from_pretrained(INTENT_MODEL_PATH)
+with open(f"{INTENT_MODEL_PATH}/id2intent.json", "r") as f:
+    id2intent = json.load(f)
+
+# Load CSV and compute spaCy docs for semantic search (use nlp with vectors)
+CSV_PATH = '../../ChatBot.Server/Data/erp_case_data_expanded.csv'
+df = pd.read_csv(CSV_PATH)
+questions = df['Question'].tolist()
+answers = df['Answer'].tolist()
+question_docs = [nlp(q) for q in questions]
+
+# Load intent CSV for hybrid lookup
+INTENT_LOOKUP_CSV = '../../intent_training/erp_intents.csv'
+intent_df = pd.read_csv(INTENT_LOOKUP_CSV)
+intent_lookup = {str(q).strip().lower(): i for q, i in zip(intent_df['text'], intent_df['intent'])}
+
+# Initialize ChromaDB for semantic memory
+chroma_client = chromadb.Client(Settings(
+    persist_directory="./chroma_db"  # Persistent storage for chat history
+))
+chat_collection = chroma_client.get_or_create_collection("chat_history")
+
+# ChromaDB functions for semantic memory (store as before, but use spaCy for similarity)
+def add_message_to_chroma(session_id: str, message: str, role: str, timestamp: Optional[str] = None):
+    if timestamp is None:
+        timestamp = datetime.utcnow().isoformat()
+    message_id = str(uuid.uuid4())
+    # Use spaCy vector for embedding
+    embedding = nlp(message).vector
+    print(f"[Embedding DEBUG] Message: '{message}'\n[Embedding DEBUG] Vector (first 5): {embedding[:5]} | Norm: {np.linalg.norm(embedding):.4f}")
+    if embedding is None or np.linalg.norm(embedding) == 0 or len(embedding) == 0:
+        print(f"[Embedding WARNING] Empty or zero embedding for message: '{message}' (skipping ChromaDB add)")
+        return None
+    chat_collection.add(
+        documents=[message],
+        embeddings=[embedding.tolist()],
+        metadatas=[{
+            "session_id": session_id,
+            "role": role,
+            "timestamp": timestamp,
+            "message_id": message_id
+        }],
+        ids=[message_id]
+    )
+    print(f"[ChromaDB] Stored {role} message for session {session_id}")
+    return message_id
+
+def get_relevant_history(query: str, session_id: Optional[str] = None, top_k: int = 5):
+    query_doc = nlp(query)
+    filters = {}
+    if session_id:
+        filters["session_id"] = session_id
+    # Get all messages for the session
+    results = chat_collection.get(where=filters if filters else None)
+    messages = []
+    if results["documents"]:
+        for i, doc in enumerate(results["documents"]):
+            messages.append({
+                "message": doc,
+                "role": results["metadatas"][i]["role"],
+                "timestamp": results["metadatas"][i]["timestamp"]
+            })
+    # Compute similarity using spaCy
+    for msg in messages:
+        msg_doc = nlp(msg["message"])
+        msg["similarity"] = query_doc.similarity(msg_doc)
+    # Sort by similarity and return top_k
+    messages.sort(key=lambda x: x["similarity"], reverse=True)
+    return messages[:top_k]
+
+def get_session_history(session_id: str, limit: int = 10):
+    try:
+        results = chat_collection.get(
+            where={"session_id": session_id},
+            limit=limit
+        )
+        messages = []
+        if results["documents"]:
+            for i, doc in enumerate(results["documents"]):
+                messages.append({
+                    "message": doc,
+                    "role": results["metadatas"][i]["role"],
+                    "timestamp": results["metadatas"][i]["timestamp"]
+                })
+        messages.sort(key=lambda x: x["timestamp"])
+        return messages
+    except Exception as e:
+        print(f"[ChromaDB] Error getting session history: {e}")
+        return []
+
+def search_with_context(query: str, context_messages: List[str] = None):
+    """Enhanced semantic search that considers conversation context"""
+    if not questions or not question_docs:
+        return None, 0.0
+    
+    query_doc = nlp(query)
+    best_score = 0.0
+    best_idx = -1
+    
+    # If we have context, create a combined query
+    if context_messages:
+        context_text = " ".join(context_messages)
+        context_doc = nlp(context_text)
+        # Combine query with context for better matching
+        combined_query = f"{query} {context_text}"
+        combined_doc = nlp(combined_query)
+    else:
+        combined_doc = query_doc
+    
+    # Search through all questions
+    for i, q_doc in enumerate(question_docs):
+        # Calculate similarity with both original query and combined query
+        direct_similarity = query_doc.similarity(q_doc)
+        context_similarity = combined_doc.similarity(q_doc)
+        
+        # Use the higher similarity score
+        similarity = max(direct_similarity, context_similarity)
+        
+        if similarity > best_score:
+            best_score = similarity
+            best_idx = i
+    
+    return best_idx, best_score
+
+def lookup_intent_exact(text):
+    return intent_lookup.get(str(text).strip().lower())
+
+def resolve_coref(user_message, last_bot_message, last_user_message=None):
+    # Use only the last bot message as context, with clear speaker tags
+    if last_bot_message:
+        context = f"Bot: {last_bot_message}\nUser: {user_message}"
+    else:
+        context = user_message
+    doc = nlp(context)
+    
+    # Check if coreferee is properly loaded
+    if not hasattr(doc._, 'coref_resolved'):
+        print("[Coreferee WARNING] coref_resolved extension not found. Trying alternative approach.")
     else:
         try:
             # Only return the rewritten user message part
@@ -318,9 +853,6 @@ class ConfigRequest(BaseModel):
     intent_config: Optional[Dict[str, Any]] = None
     semantic_config: Optional[Dict[str, Any]] = None
     default_strategy: Optional[str] = None
-
-class DomainChangeRequest(BaseModel):
-    domain: str
 
 # Data source management
 class DataSourceManager:
@@ -568,9 +1100,6 @@ async def analyze(request: AnalyzeRequest):
     history = request.history or []
     context_used = None
 
-    # Get domain-specific configuration
-    domain_config = get_domain_config()
-
     # Store the user message in ChromaDB for future semantic retrieval
     if session_id:
         add_message_to_chroma(session_id, text, "user")
@@ -594,8 +1123,7 @@ async def analyze(request: AnalyzeRequest):
             "source": "csv_lookup",
             "intent": exact_intent,
             "matched_question": text,
-            "rewritten": rewritten,
-            "domain": current_domain
+            "rewritten": rewritten
         }
 
     # 1. Try semantic search in CSV using spaCy similarity (domain-specific threshold)
@@ -612,16 +1140,13 @@ async def analyze(request: AnalyzeRequest):
             print(f"[Semantic Search] User Query: {text}")
             print(f"[Semantic Search] Best Match: {questions[best_idx]}")
             print(f"[Semantic Search] Similarity Score: {best_score}")
-            print(f"[Semantic Search] Domain Threshold: {domain_config['similarity_threshold']}")
-            print(f"[Semantic Search] Context used: {len(context_messages)} messages")
-            if best_score > domain_config['similarity_threshold']:
+            if best_score > config.data_sources[0].similarity_threshold:
                 return {
                     "source": "csv",
                     "answer": answers[best_idx],
                     "similarity": best_score,
                     "matched_question": questions[best_idx],
-                    "rewritten": rewritten,
-                    "domain": current_domain
+                    "rewritten": rewritten
                 }
 
     # 2. Get semantically relevant chat history using spaCy similarity
@@ -651,9 +1176,7 @@ async def analyze(request: AnalyzeRequest):
         "context_used": context_used,
         "relevant_history": relevant_history,
         "rewritten": rewritten,
-        "domain": current_domain,
-        "confidence": intent_confidence,
-        "domain_threshold": domain_config['intent_confidence_threshold']
+        "confidence": intent_confidence
     }
 
 @app.post("/store_message")
@@ -762,50 +1285,6 @@ async def health():
         "data_sources": len(data_manager.sources),
         "intent_enabled": intent_manager.enabled,
         "chroma_connected": True
-    }
-
-@app.post("/change_domain")
-async def change_domain(request: DomainChangeRequest):
-    global current_domain, df, questions, answers, question_docs, intent_lookup
-    
-    if request.domain not in DOMAIN_CONFIGS:
-        return {"error": f"Domain '{request.domain}' not found. Available domains: {list(DOMAIN_CONFIGS.keys())}"}
-    
-    current_domain = request.domain
-    config = get_domain_config()
-    
-    # Reload data based on new domain
-    if config['csv_path'] and os.path.exists(config['csv_path']):
-        df = pd.read_csv(config['csv_path'])
-        questions = df['Question'].tolist()
-        answers = df['Answer'].tolist()
-        question_docs = [nlp(q) for q in questions]
-    else:
-        questions = []
-        answers = []
-        question_docs = []
-    
-    # Reload intent lookup
-    if config['intent_lookup_csv'] and os.path.exists(config['intent_lookup_csv']):
-        intent_df = pd.read_csv(config['intent_lookup_csv'])
-        intent_lookup = {str(q).strip().lower(): i for q, i in zip(intent_df['text'], intent_df['intent'])}
-    else:
-        intent_lookup = {}
-    
-    return {
-        "status": "domain_changed",
-        "domain": current_domain,
-        "config": config,
-        "questions_loaded": len(questions),
-        "intents_loaded": len(intent_lookup)
-    }
-
-@app.get("/get_domains")
-async def get_domains():
-    return {
-        "current_domain": current_domain,
-        "available_domains": list(DOMAIN_CONFIGS.keys()),
-        "domain_configs": DOMAIN_CONFIGS
     }
 
 # Initialize with default ERP configuration
